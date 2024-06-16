@@ -27,47 +27,48 @@ public class ParticipantRestController {
 											 @RequestParam(value = "sortOrder", defaultValue = "") String sortOrder,
 											 @RequestParam(value = "key", defaultValue = "") String login) {
 		Collection<Participant> participants = participantService.getAll(login, sortMode, sortOrder);
-		return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
+		return new ResponseEntity<>(participants, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> getParticipant(@PathVariable("id") String login) {
 		Participant participant = participantService.findByLogin(login);
 		if (participant == null) {
-			return new ResponseEntity(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<Participant>(participant, HttpStatus.OK);
+		return new ResponseEntity<>(participant, HttpStatus.OK);
 	}
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<?> addParticipant(@RequestBody Participant participant) {
-        if (participantService.findByLogin(participant.getLogin()) != null) {
-			return new ResponseEntity<String>(
-					"Unable to create. A participant with login " + participant.getLogin() + " already exist.",
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	public ResponseEntity<?> addParticipant(@RequestBody Participant participant) {
+		if (participantService.findByLogin(participant.getLogin()) != null) {
+			return new ResponseEntity<>("Participant with login " + participant.getLogin() + " already exists.",
 					HttpStatus.CONFLICT);
-        }
-        participantService.add(participant);
-        return new ResponseEntity<Participant>(participant, HttpStatus.CREATED);
-    }
+		}
+		participantService.add(participant);
+		return new ResponseEntity<>(participant, HttpStatus.CREATED);
+	}
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> delete(@PathVariable("id") String login) {
-        Participant participant = participantService.findByLogin(login);
-        if (participant == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-        participantService.delete(participant);
-		return new ResponseEntity<Participant>(HttpStatus.OK);
-    }
-
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<?> update(@PathVariable("id") String login, @RequestBody Participant updatedParticipant) {
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteParticipant(@PathVariable("id") String login) {
 		Participant participant = participantService.findByLogin(login);
 		if (participant == null) {
-			return new ResponseEntity(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		participantService.update(participant);
-		return new ResponseEntity<Participant>(HttpStatus.OK);
+		participantService.delete(participant);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<?> updateParticipant(@PathVariable("id") String login, @RequestBody Participant updatedParticipant) {
+		Participant participant = participantService.findByLogin(login);
+		if (participant == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		participant.setLogin(updatedParticipant.getLogin());
+		participant.setPassword(updatedParticipant.getPassword());
+		participant.setEmail(updatedParticipant.getEmail());
+		participantService.update(participant);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

@@ -15,6 +15,9 @@ public class Participant {
     @Column
     private String password;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
     public String getLogin() {
         return login;
     }
@@ -29,5 +32,13 @@ public class Participant {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

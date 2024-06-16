@@ -8,11 +8,10 @@ import org.hibernate.Transaction;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-
 @Component("meetingService")
 public class MeetingService {
 
-    Session session;
+    private final Session session;
 
     public MeetingService() {
         session = DatabaseConnector.getInstance().getSession();
@@ -29,9 +28,9 @@ public class MeetingService {
     }
 
     public Collection<Meeting> findMeetings(String title, String description, Participant participant, String sortMode) {
-        String hql = "FROM Meeting as meeting WHERE title LIKE :title AND description LIKE :description ";
+        String hql = "FROM Meeting as meeting WHERE title LIKE :title AND description LIKE :description";
         if (participant != null) {
-            hql += " AND :participant in elements(participants)";
+            hql += " AND organizer = :participant";
         }
         if (sortMode.equals("title")) {
             hql += " ORDER BY title";
@@ -63,11 +62,9 @@ public class MeetingService {
     }
 
     public boolean alreadyExist(Meeting meeting) {
-        String hql = "FROM Meeting WHERE title=:title AND date=:date";
+        String hql = "FROM Meeting WHERE title = :title AND date = :date";
         Query query = this.session.createQuery(hql);
-        Collection resultList = query.setParameter("title", meeting.getTitle()).setParameter("date", meeting.getDate())
-                .list();
-        return query.list().size() != 0;
+        Collection resultList = query.setParameter("title", meeting.getTitle()).setParameter("date", meeting.getDate()).list();
+        return !resultList.isEmpty();
     }
-
 }

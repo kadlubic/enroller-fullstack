@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import NewMeetingForm from "./NewMeetingForm";
 import MeetingsList from "./MeetingsList";
 
@@ -6,16 +6,35 @@ export default function MeetingsPage({username}) {
     const [meetings, setMeetings] = useState([]);
     const [addingNewMeeting, setAddingNewMeeting] = useState(false);
 
+    useEffect(() => {
+        async function fetchMeetings() {
+            const response = await fetch('/api/meetings');
+            const data = await response.json();
+            setMeetings(data);
+        }
+        fetchMeetings();
+    }, []);
+
     async function handleNewMeeting(meeting) {
-        const response = await fetch('/api/meetings', {
-            method: 'POST',
-            body: JSON.stringify(meeting),
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (response.ok) {
-            const nextMeetings = [...meetings, meeting];
-            setMeetings(nextMeetings);
-            setAddingNewMeeting(false);
+        console.log("Adding meeting:", meeting); 
+        try {
+            const response = await fetch('/api/meetings', {
+                method: 'POST',
+                body: JSON.stringify(meeting),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                const newMeeting = await response.json();
+                setMeetings([...meetings, newMeeting]);
+                setAddingNewMeeting(false);
+            } else {
+                const errorText = await response.text();
+                console.error("Failed to add meeting:", errorText);
+                alert(`Failed to add meeting. Error: ${errorText}`);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while adding the meeting. Please try again.");
         }
     }
 
@@ -49,7 +68,7 @@ export default function MeetingsPage({username}) {
             <h2>Zajęcia ({meetings.length})</h2>
             {
                 addingNewMeeting
-                    ? <NewMeetingForm onSubmit={(meeting) => handleNewMeeting(meeting)}/>
+                    ? <NewMeetingForm onSubmit={handleNewMeeting} organizerLogin={username}/>
                     : <button onClick={() => setAddingNewMeeting(true)}>Dodaj nowe spotkanie</button>
             }
             {meetings.length > 0 &&

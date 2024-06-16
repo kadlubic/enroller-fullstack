@@ -53,5 +53,4 @@ public class ParticipantService {
         connector.getSession().delete(participant);
         transaction.commit();
     }
-
 }
